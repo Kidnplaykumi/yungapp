@@ -1,4 +1,4 @@
-# Chatarang
+# yungapp
 
 The final project for Xtern Bootcamp 2018 Session 3. Based on [Davey's version](https://github.com/xtbc18s3/chatarang).
 

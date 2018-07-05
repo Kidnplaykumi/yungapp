@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import './App.css'
 import Main from './Main'
 import SignIn from './SignIn'
+import base from './base';
 
 class App extends Component {
   constructor() {
@@ -13,6 +14,21 @@ class App extends Component {
     this.state = {
       user: user || {},
     }
+  }
+
+  componentDidMount(){
+    base.syncState(`shoppingList`, {
+      context: this,
+      state: 'items',
+      asArray: true
+    });
+  }
+
+
+  addItem(newItem){
+    this.setState({
+      items: this.state.items.concat([newItem]) //updates Firebase and the local state
+    });
   }
 
   handleAuth = (user) => {
