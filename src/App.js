@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import './App.css'
 import Main from './Main'
 import SignIn from './SignIn'
-import base from './base';
+
 
 class App extends Component {
   constructor() {
@@ -16,14 +16,7 @@ class App extends Component {
     }
   }
 
-  componentDidMount(){
-    base.syncState(`shoppingList`, {
-      context: this,
-      state: 'items',
-      asArray: true
-    });
-  }
-
+  
 
   addItem(newItem){
     this.setState({
