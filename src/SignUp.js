@@ -2,17 +2,15 @@ import React, { Component } from 'react'
 import { StyleSheet, css } from 'aphrodite'
 import { Link } from 'react-router-dom'
 
-import { auth, googleProvider, githubProvider } from './base'
+import { auth } from './base'
 
-class SignIn extends Component {
+class SignUp extends Component {
   state = {
     email: '',
     password: '',
+    passwordConfirmation: '',
+    displayName: '',
     errorMessage: null,
-  }
-
-  authenticate = (provider) => {
-    auth.signInWithPopup(provider)
   }
 
   handleChange = (ev) => {
@@ -24,9 +22,26 @@ class SignIn extends Component {
 
   handleSubmit = (ev) => {
     ev.preventDefault()
-    auth
-      .signInWithEmailAndPassword(this.state.email, this.state.password)
-      .catch(error => this.setState({ errorMessage: error.message }))
+    if (this.passwordsMatch()) {
+      auth
+        .createUserWithEmailAndPassword(this.state.email, this.state.password)
+        .then(() => {
+          if (this.state.displayName) {
+            this.props.updateUser({
+              displayName: this.state.displayName,
+            })
+          }
+        })
+        .catch(error => this.setState({ errorMessage: error.message }))
+    }
+  }
+
+  passwordsMatch = () => {
+    if (this.state.password !== this.state.passwordConfirmation) {
+      this.setState({ errorMessage: 'The passwords you entered do not match.' })
+      return false
+    }
+    return true
   }
 
   render() {
@@ -43,7 +58,7 @@ class SignIn extends Component {
             className={css(styles.form)}
             onSubmit={this.handleSubmit}
           >
-            <h2>Sign In</h2>
+            <h2>Sign Up</h2>
             <label
               htmlFor="email"
               className={css(styles.label)}
@@ -58,6 +73,22 @@ class SignIn extends Component {
               value={this.state.email}
               onChange={this.handleChange}
             />
+
+            <label
+              htmlFor="displayName"
+              className={css(styles.label)}
+            >
+              Display Name (optional)
+            </label>
+            <input
+              autoFocus
+              type="text"
+              name="displayName"
+              className={css(styles.input)}
+              value={this.state.displayName}
+              onChange={this.handleChange}
+            />
+
             <label
               htmlFor="password"
               className={css(styles.label)}
@@ -72,11 +103,25 @@ class SignIn extends Component {
               value={this.state.password}
               onChange={this.handleChange}
             />
+            <label
+              htmlFor="passwordConfirmation"
+              className={css(styles.label)}
+            >
+              Re-type Password
+            </label>
+            <input
+              required
+              type="password"
+              name="passwordConfirmation"
+              className={css(styles.input)}
+              value={this.state.passwordConfirmation}
+              onChange={this.handleChange}
+            />
             <button
               type="submit"
               className={css(styles.button)}
             >
-              Sign In
+              Sign Up
             </button>
 
             <p className={css(styles.error)}>
@@ -84,30 +129,8 @@ class SignIn extends Component {
             </p>
 
             <p>
-              Not a member yet? <Link to="/sign-up">Sign up</Link>!
+              Already a member? <Link to="/sign-in">Sign in</Link>!
             </p>
-
-            OR
-
-            <div className={css(styles.buttonGroup)}>
-              <button
-                type="button"
-                className={css(styles.button)}
-                onClick={() => this.authenticate(googleProvider)}
-              >
-                <i className={`fab fa-google ${css(styles.brandIcon)}`}></i>
-                Sign in with Google
-              </button>
-
-              <button
-                type="button"
-                className={css(styles.button, styles.github)}
-                onClick={() => this.authenticate(githubProvider)}
-              >
-                <i className={`fab fa-github ${css(styles.brandIcon)}`}></i>
-                Sign in with GitHub
-              </button>
-            </div>
           </form>
 
           <div className="blurb">
@@ -191,18 +214,9 @@ const styles = StyleSheet.create({
     color: 'white',
     width: '20rem',
   },
-  github: {
-    backgroundColor: '#6e5494',
-  },
-  brandIcon: {
-    marginRight: '1rem',
-  },
-  buttonGroup: {
-    marginTop: '1rem',
-  },
   error: {
     color: '#ff3333',
     height: '1.2rem',
   },
 })
-export default SignIn
+export default SignUp

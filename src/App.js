@@ -2,9 +2,10 @@ import React, { Component } from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
 
 import './App.css'
-import { auth } from './base'
+import base, { auth } from './base'
 import Main from './Main'
 import SignIn from './SignIn'
+import SignUp from './SignUp'
 
 class App extends Component {
   constructor() {
@@ -33,13 +34,40 @@ class App extends Component {
 
   handleAuth = (oAuthUser) => {
     const user = {
-      uid: oAuthUser.uid,
+      uid: oAuthUser.uid || oAuthUser.email,
       displayName: oAuthUser.displayName,
       email: oAuthUser.email,
       photoUrl: oAuthUser.photoURL,
     }
-    this.setState({ user })
+    this.syncUser(user)
     localStorage.setItem('user', JSON.stringify(user))
+  }
+
+  syncUser = user => {
+    this.userRef = base.syncState(
+      `users/${this.state.user.uid}`,
+      {
+        context: this,
+        state: 'user',
+        then: () => this.setState({ user })
+      }
+    )
+  }
+
+  updateUser = userData => {
+    console.log('trying')
+    const forbiddenAttributes = ['email', 'uid', 'password']
+    const user = {...this.state.user}
+
+    Object.keys(userData).forEach(
+      attribute => {
+        if (forbiddenAttributes.indexOf(attribute) === -1) {
+          user[attribute] = userData[attribute]
+        }
+      }
+    )
+
+    this.setState({ user })
   }
 
   signedIn = () => {
@@ -51,6 +79,10 @@ class App extends Component {
   }
 
   handleUnauth = () => {
+    if (this.userRef) {
+      base.removeBinding(this.userRef)
+    }
+
     this.setState({ user: {} })
     localStorage.removeItem('user')
   }
@@ -59,6 +91,14 @@ class App extends Component {
     return (
       <div className="App">
         <Switch>
+          <Route
+            path="/sign-up"
+            render={() => (
+              this.signedIn()
+                ? <Redirect to="/chat" />
+                : <SignUp updateUser={this.updateUser} />
+            )}
+          />
           <Route
             path="/sign-in"
             render={() => (

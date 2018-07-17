@@ -1,3 +1,4 @@
+
 import React, { Component, Fragment } from 'react'
 import { Route, Switch, Redirect } from 'react-router-dom'
 
@@ -13,7 +14,6 @@ class Main extends Component {
       description: 'Chat about stuff',
     },
     rooms: {},
-    showRoomForm: false,
   }
 
   componentDidMount() {
@@ -46,7 +46,9 @@ class Main extends Component {
 
   setRoomFromRoute = () => {
     const { roomName } = this.props.match.params
-    this.setCurrentRoom(roomName)
+    if (roomName) {
+      this.setCurrentRoom(roomName)
+    }
   }
 
   addRoom = room => {
@@ -56,17 +58,31 @@ class Main extends Component {
     this.setState({ rooms })
   }
 
+  removeRoom = roomName => {
+    const rooms = {...this.state.rooms}
+    rooms[roomName] = null
+    this.setState(
+      { rooms },
+      this.loadValidRoom
+    )
+  }
+
   setCurrentRoom = roomName => {
     const room = this.state.rooms[roomName]
-    this.setState({ room })
+
+    if (room) {
+      this.setState({ room })
+    } else {
+      this.loadValidRoom()
+    }
   }
 
-  showRoomForm = () => {
-    this.setState({ showRoomForm: true })
-  }
-
-  hideRoomForm = () => {
-    this.setState({ showRoomForm: false })
+  loadValidRoom = () => {
+    const roomNames = Object.keys(this.state.rooms)
+    if (roomNames.length > 0) {
+      const roomName = roomNames[0]
+      this.props.history.push(`/chat/rooms/${roomName}`)
+    }
   }
 
   render() {
@@ -75,10 +91,10 @@ class Main extends Component {
         <Switch>
           <Route
             path="/chat/new-room"
-            render={() => (
+            render={(navProps) => (
               <RoomForm
                 addRoom={this.addRoom}
-                hideRoomForm={this.hideRoomForm}
+                {...navProps}
               />
             )}
           />
@@ -90,12 +106,11 @@ class Main extends Component {
                   user={this.props.user}
                   signOut={this.props.signOut}
                   rooms={this.state.rooms}
-                  setCurrentRoom={this.setCurrentRoom}
-                  showRoomForm={this.showRoomForm}
                 />
                 <Chat
                   user={this.props.user}
                   room={this.state.room}
+                  removeRoom={this.removeRoom}
                 />
               </Fragment>
             )}

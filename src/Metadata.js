@@ -1,3 +1,4 @@
+
 import React from 'react'
 import moment from 'moment'
 
@@ -8,7 +9,7 @@ const Metadata = ({ message }) => {
       style={styles.metadata}
     >
       <div style={styles.user}>
-        {message.user.displayName}
+        {message.user.displayName || message.user.email}
       </div>
       <div style={styles.time}>
         {/* {moment(message.createdAt).format('D MMM @ h:mm A')} */}
